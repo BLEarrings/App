@@ -41,6 +41,9 @@
 
   <Capabilities>
     <rescap:Capability Name="runFullTrust" />
+    
+    <!-- Require Bluetooth capability for the Plugin.BLE library. -->
+    <DeviceCapability Name="bluetooth"/>
   </Capabilities>
 
 </Package>
