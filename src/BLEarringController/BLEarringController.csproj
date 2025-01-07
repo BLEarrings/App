@@ -21,7 +21,7 @@
     <Nullable>enable</Nullable>
 
     <!-- Display name -->
-    <ApplicationTitle>BLEarringController</ApplicationTitle>
+    <ApplicationTitle>BLEarring Controller</ApplicationTitle>
 
     <!-- App Identifier -->
     <ApplicationId>com.blearrings.blearringcontroller</ApplicationId>
