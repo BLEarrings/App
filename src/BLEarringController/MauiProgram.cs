@@ -1,14 +1,20 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using CommunityToolkit.Maui;
+using Microsoft.Extensions.Logging;
 
 namespace BLEarringController
 {
     public static class MauiProgram
     {
+        #region Methods
+
+        #region Public Static
+
         public static MauiApp CreateMauiApp()
         {
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -21,5 +27,9 @@ namespace BLEarringController
 
             return builder.Build();
         }
+
+        #endregion
+
+        #endregion
     }
 }
