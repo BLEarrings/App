@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BLEarringController.ViewModels"
+             x:Class="BLEarringController.Views.HomePage"
+             x:DataType="viewModels:HomePageViewModel">
+    
+    <ContentPage.BindingContext>
+        <viewModels:HomePageViewModel />
+    </ContentPage.BindingContext>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30,0"
+                             Spacing="25">
+
+            <Label Text="{Binding Title}"
+                   Style="{StaticResource Headline}" />
+
+            <Label Text="{Binding Subtitle}"
+                   Style="{StaticResource SubHeadline}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
