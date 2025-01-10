@@ -8,4 +8,5 @@ cross-platform app, and currently targets `Android` and `Windows`.
 This app uses some 3rd party libraries, which will be listed here for
 reference:
 
+- [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui).
 - [Plugin.BLE](https://github.com/dotnet-bluetooth-le/dotnet-bluetooth-le).
