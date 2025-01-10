@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application android:allowBackup="true" android:icon="@mipmap/appicon" android:supportsRtl="true"></application>
+
+  <!-- These are from the template MAUI app... Are these needed? -->
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.INTERNET" />
+
+  <!-- Permissions for the Plugin.BLE library. -->
+  <!-- Request legacy Bluetooth permissions on older devices (<= API 30). -->
+  <uses-permission android:name="android.permission.BLUETOOTH"
+                   android:maxSdkVersion="30" />
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
+                   android:maxSdkVersion="30" />
+  <!-- Use "neverForLocation" to indicate that this app does not use Bluetooth
+       scan results to derive the physical location of the device. -->
+  <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+                   android:usesPermissionFlags="neverForLocation" />
+  <!-- Since "neverForLocation" is set above, the "maxSdkVersion" can be set to
+       30 (Android 11), since it is only a requirement when using the
+       BLUETOOTH_SCAN permission on Android API versions up to 30. After this
+       API version, since we assert the Bluetooth scan is not to derive the
+       physical location of the device, this is not needed. -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
+                   android:maxSdkVersion="30" />
+  <!-- Needed since the app may communicate with already-paired Bluetooth
+       devices. -->
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+  <!-- Declare that the app is only available to devices with BLE hardware. -->
+  <uses-feature android:name="android.hardware.bluetooth_le"
+                android:required="true" />
+</manifest>

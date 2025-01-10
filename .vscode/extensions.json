@@ -1,0 +1,16 @@
+{
+    "recommendations": [
+        "ms-dotnettools.dotnet-maui",
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "streetsidesoftware.code-spell-checker",
+        "yzhang.markdown-all-in-one",
+        "github.vscode-pull-request-github",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "christian-kohler.path-intellisense",
+        "mhutchie.git-graph",
+        "ihsandev.scrcpy2",
+        "aaron-bond.better-comments",
+        "github.vscode-github-actions"
+    ]
+}

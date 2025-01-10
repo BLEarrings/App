@@ -1,0 +1,8 @@
+{
+    "cSpell.language": "en-GB",
+    "markdown.extension.print.theme": "dark",
+    "markdown.extension.toc.levels": "2..6",
+    "editor.rulers": [
+        100
+    ]
+}
