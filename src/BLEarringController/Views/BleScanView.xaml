@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="clr-namespace:BLEarringController.ViewModels"
+             xmlns:ble="clr-namespace:Plugin.BLE.Abstractions.Contracts;assembly=Plugin.BLE"
+             xmlns:converters="clr-namespace:BLEarringController.Converters"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="BLEarringController.Views.BleScanView"
+             x:DataType="viewModels:BleScanViewModel">
+
+    <ContentPage.BindingContext>
+        <!-- TODO: This feels a bit clunky, but for only a couple of views should be fine. -->
+        <viewModels:BleScanViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:GuidToMacStringConverter x:Key="GuidMacConverter" />
+            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid Margin="20,10,20,20"
+          RowSpacing="20">
+
+        <Grid.RowDefinitions>
+            <!-- Title and Subtitle are automatic size, at the top of the page. -->
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <!-- CollectionView takes up all remaining space on the page. -->
+            <RowDefinition Height="*" />
+            <!-- Progress bar to show scan duration. -->
+            <RowDefinition Height="Auto" />
+            <!-- Scan button is automatic size, at the bottom of the page. -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0"
+               Text="{Binding Title}"
+               Style="{StaticResource Headline}" />
+
+        <Label Grid.Row="1"
+               Text="{Binding Subtitle}"
+               Style="{StaticResource SubHeadline}" />
+
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding FoundDevices}">
+
+            <!-- Define the DataTemplate used for each discovered IDevice. -->
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="ble:IDevice">
+
+                    <!-- TODO: This is very basic for now, but is a nice PoC. -->
+                    <VerticalStackLayout Padding="0,5">
+
+                        <HorizontalStackLayout>
+                            <Label Text="Name: "/>
+                            <Label Text="{Binding Name, TargetNullValue='Null'}"/>
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout>
+                            <Label Text="MAC: "/>
+                            <Label Text="{Binding Id, Converter={StaticResource GuidMacConverter}}"/>
+                        </HorizontalStackLayout>
+
+                        <HorizontalStackLayout>
+                            <Label Text="RSSI: "/>
+                            <Label Text="{Binding Rssi}"/>
+                        </HorizontalStackLayout>
+
+                    </VerticalStackLayout>
+                    
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+
+            <!-- Define the CollectionView contents for when no devices have been discovered. -->
+            <CollectionView.EmptyView>
+                <ContentView>
+
+                    <!-- Label to display text in the center of the empty screen. -->
+                    <Label HorizontalOptions="Center"
+                           VerticalOptions="Center">
+                        <Label.Triggers>
+
+                            <!--
+                            DataTrigger to set the text before the first scan has been run. This
+                            will only appear the first time the view opens, as that is the only
+                            time the collection will be empty before a scan runs.
+                            -->
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding ScanHasRun}"
+                                         Value="False">
+                                <Setter Property="Text"
+                                        Value="{Binding BeforeFirstScanText}" />
+                            </DataTrigger>
+
+                            <!--
+                            DataTrigger to set the text after the first scan runs. In this case, a
+                            scan has run and returned no results, so display slightly different
+                            text.
+                            -->
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding ScanHasRun}"
+                                         Value="True">
+                                <Setter Property="Text"
+                                        Value="{Binding NoDevicesFoundText}" />
+                            </DataTrigger>
+
+                            <!--
+                            Lastly, if a scan is currently running, override both above triggers to
+                            show text indicating that a scan is in progress. This is intentionally
+                            placed last so it overrides both above behaviours, to make the UI look
+                            more responsive when a scan is started, since the collection will be
+                            emptied and otherwise display text like "No results found" while the
+                            scan is still running.
+                            -->
+                            <DataTrigger TargetType="Label"
+                                         Binding="{Binding ScanInProgress}"
+                                         Value="True">
+                                <Setter Property="Text"
+                                        Value="{Binding ScanningText}" />
+                            </DataTrigger>
+
+                        </Label.Triggers>
+                    </Label>
+
+                    <!-- TODO: Add an icon of some sort here? -->
+
+                </ContentView>
+            </CollectionView.EmptyView>
+
+        </CollectionView>
+
+        <ProgressBar Grid.Row="3"
+                     Progress="{Binding ScanProgress}"/>
+
+        <Button Grid.Row="4"
+                Text="{Binding ScanButtonText}"
+                Command="{Binding ScanCommand}"
+                IsEnabled="{Binding ScanInProgress, Converter={StaticResource InvertedBoolConverter}}"
+                HorizontalOptions="Fill" />
+
+    </Grid>
+
+</ContentPage>

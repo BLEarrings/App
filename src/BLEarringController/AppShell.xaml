@@ -11,5 +11,8 @@
                   ContentTemplate="{DataTemplate views:HomePage}"
                   Route="HomePage" />
 
+    <ShellContent Title="BLE Scan"
+                  ContentTemplate="{DataTemplate views:BleScanView}"
+                  Route="BleScanView" />
 
 </Shell>
