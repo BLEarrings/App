@@ -65,4 +65,11 @@
     <PackageReference Include="Plugin.BLE" Version="3.1.0" />
   </ItemGroup>
 
+  <!-- Ensure all .xaml files in the project are compiled. -->
+  <ItemGroup>
+    <MauiXaml Update="**\**.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
 </Project>
