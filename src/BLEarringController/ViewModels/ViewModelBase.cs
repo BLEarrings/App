@@ -6,7 +6,7 @@ namespace BLEarringController.ViewModels
     /// <summary>
     /// Base class for all view models.
     /// </summary>
-    public abstract class ViewModelBase : INotifyPropertyChanged
+    public abstract class ViewModelBase : INotifyPropertyChanged, IQueryAttributable
     {
         #region Events
 
@@ -29,6 +29,15 @@ namespace BLEarringController.ViewModels
         protected void NotifyPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+
+        #region Public
+
+        /// <inheritdoc />
+        public virtual void ApplyQueryAttributes(IDictionary<string, object> query)
+        {
         }
 
         #endregion
