@@ -13,6 +13,11 @@ namespace BLEarringController.Views
         /// </summary>
         internal const string BleControlView = @"blecontrolview";
 
+        /// <summary>
+        /// The initial home page for the app.
+        /// </summary>
+        internal const string HomePageView = @"homepageview";
+
         #endregion
 
         #endregion

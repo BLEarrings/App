@@ -9,10 +9,10 @@
 
     <ShellContent Title="Home"
                   ContentTemplate="{DataTemplate views:HomePage}"
-                  Route="HomePage" />
+                  Route="homepage" />
 
-    <ShellContent Title="BLE Scan"
-                  ContentTemplate="{DataTemplate views:BleScanView}"
-                  Route="BleScanView" />
+    <ShellContent Title="BLE Control"
+                  ContentTemplate="{DataTemplate views:BleControlView}"
+                  Route="blecontrolview"/>
 
 </Shell>

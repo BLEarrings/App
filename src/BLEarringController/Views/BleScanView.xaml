@@ -6,7 +6,8 @@
              xmlns:converters="clr-namespace:BLEarringController.Converters"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="BLEarringController.Views.BleScanView"
-             x:DataType="viewModels:BleScanViewModel">
+             x:DataType="viewModels:BleScanViewModel"
+             Shell.PresentationMode="ModalAnimated">
 
     <ContentPage.BindingContext>
         <!-- TODO: This feels a bit clunky, but for only a couple of views should be fine. -->
@@ -44,7 +45,10 @@
                Style="{StaticResource SubHeadline}" />
 
         <CollectionView Grid.Row="2"
-                        ItemsSource="{Binding FoundDevices}">
+                        ItemsSource="{Binding FoundDevices}"
+                        SelectionMode="Single"
+                        SelectionChangedCommand="{Binding DeviceSelectedCommand}"
+                        SelectionChangedCommandParameter="{Binding Path=SelectedItem, Source={x:RelativeSource Self}, x:DataType='CollectionView'}">
 
             <!-- Define the DataTemplate used for each discovered IDevice. -->
             <CollectionView.ItemTemplate>
@@ -60,16 +64,17 @@
 
                         <HorizontalStackLayout>
                             <Label Text="MAC: "/>
-                            <Label Text="{Binding Id, Converter={StaticResource GuidMacConverter}}"/>
+                            <Label Text="{Binding Id, Converter={StaticResource GuidMacConverter}, TargetNullValue='Null'}"/>
                         </HorizontalStackLayout>
 
+                        <!-- TODO: Add live updates to this value. -->
                         <HorizontalStackLayout>
                             <Label Text="RSSI: "/>
-                            <Label Text="{Binding Rssi}"/>
+                            <Label Text="{Binding Rssi, TargetNullValue='Null'}"/>
                         </HorizontalStackLayout>
 
                     </VerticalStackLayout>
-                    
+
                 </DataTemplate>
             </CollectionView.ItemTemplate>
 
