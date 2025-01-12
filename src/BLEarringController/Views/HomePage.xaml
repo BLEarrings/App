@@ -4,7 +4,7 @@
              xmlns:viewModels="clr-namespace:BLEarringController.ViewModels"
              x:Class="BLEarringController.Views.HomePage"
              x:DataType="viewModels:HomePageViewModel">
-    
+
     <ContentPage.BindingContext>
         <viewModels:HomePageViewModel />
     </ContentPage.BindingContext>
