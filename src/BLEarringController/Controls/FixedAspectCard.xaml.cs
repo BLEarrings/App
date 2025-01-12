@@ -206,7 +206,7 @@ namespace BLEarringController.Controls
             }
 
             // The AspectRatio is valid if it is between MinAspectRatio and MaxAspectRatio.
-            return aspectRatio is > MinAspectRatio and < MaxAspectRatio;
+            return aspectRatio is >= MinAspectRatio and <= MaxAspectRatio;
         }
 
         #endregion
