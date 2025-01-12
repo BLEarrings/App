@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:BLEarringController.Controls"
              x:Class="BLEarringController.Controls.FixedAspectCard">
 
     <!--
@@ -8,7 +9,7 @@
     content from other XAML files, and not interfere with the bindings of the consumer.
     -->
     <ContentView.ControlTemplate>
-        <ControlTemplate>
+        <ControlTemplate x:DataType="controls:FixedAspectCard">
 
             <!--
             The boarder around all card content. This is used to apply the background colour,
