@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModels="clr-namespace:BLEarringController.ViewModels"
-             x:Class="BLEarringController.Views.HomePage"
+             x:Class="BLEarringController.Views.HomePageView"
              x:DataType="viewModels:HomePageViewModel">
 
     <ContentPage.BindingContext>
