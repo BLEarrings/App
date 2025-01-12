@@ -16,6 +16,8 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>BLEarringController</RootNamespace>
     <UseMaui>true</UseMaui>
+    <!-- Enable compiled bindings with source compilation. -->
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
