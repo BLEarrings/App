@@ -21,6 +21,8 @@
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Treat warnings as errors to keep this codebase clean! -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- Display name. -->
     <ApplicationTitle>BLEarring Controller</ApplicationTitle>
@@ -85,6 +87,8 @@
     <MauiXaml Update="**\**.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+
+    <!-- TODO: Temporary to keep empyty images folder in the .sln -->
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Resources\Images\" />
