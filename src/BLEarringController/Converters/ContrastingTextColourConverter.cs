@@ -58,6 +58,9 @@ namespace BLEarringController.Converters
         /// <returns>
         /// Either <see cref="Colors.Black"/> or <see cref="Colors.White"/>, depending on which has
         /// the best contrast against the background.
+        /// <para>
+        /// Note that <c>null</c> is returned if the input value is not a <see cref="Color"/>.
+        /// </para>
         /// </returns>
         public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
