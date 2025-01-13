@@ -16,18 +16,33 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>BLEarringController</RootNamespace>
     <UseMaui>true</UseMaui>
+    <!-- Enable compiled bindings with source compilation. -->
+    <MauiEnableXamlCBindingWithSourceCompilation>true</MauiEnableXamlCBindingWithSourceCompilation>
     <SingleProject>true</SingleProject>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Treat warnings as errors to keep this codebase clean! -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
-    <!-- Display name -->
+    <!-- Display name. -->
     <ApplicationTitle>BLEarring Controller</ApplicationTitle>
 
-    <!-- App Identifier -->
+    <!-- App Identifier. -->
     <ApplicationId>com.blearrings.blearringcontroller</ApplicationId>
 
-    <!-- Versions -->
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <!-- App Versions. -->
+    <!--
+    This is the app version that can be seen by the end user and stores etc.
+
+    Note that the full semantic versioning specification is not supported, version numbers must be
+    in the format X.Y.Z.
+    -->
+    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <!--
+    This version is used to determine whether one version is more recent than another. It must be
+    incremented with every published build and must be an integer. Potentially this could be the
+    build number?
+    -->
     <ApplicationVersion>1</ApplicationVersion>
 
     <!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
@@ -41,23 +56,25 @@
     <DefaultLanguage>en-gb</DefaultLanguage>
   </PropertyGroup>
 
+  <!-- MAUI application resources. -->
   <ItemGroup>
-    <!-- App Icon -->
+    <!-- App Icon. -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
 
-    <!-- Splash Screen -->
+    <!-- Splash Screen. -->
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
 
-    <!-- Images -->
+    <!-- Images. -->
     <MauiImage Include="Resources\Images\*" />
 
-    <!-- Custom Fonts -->
+    <!-- Custom Fonts. -->
     <MauiFont Include="Resources\Fonts\*" />
 
-    <!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+    <!-- Raw Assets (also remove the "Resources\Raw" prefix). -->
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <!-- NuGet package references. -->
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Maui" Version="10.0.0" />
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.21" />
@@ -70,6 +87,11 @@
     <MauiXaml Update="**\**.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+
+    <!-- TODO: Temporary to keep empyty images folder in the .sln -->
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\Images\" />
   </ItemGroup>
 
 </Project>

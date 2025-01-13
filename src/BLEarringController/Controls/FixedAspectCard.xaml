@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:BLEarringController.Controls"
+             x:Class="BLEarringController.Controls.FixedAspectCard">
+
+    <!--
+    Use a ControlTemplate to set the appearance of the card, while still allowing it to accept
+    content from other XAML files, and not interfere with the bindings of the consumer.
+    -->
+    <ContentView.ControlTemplate>
+        <ControlTemplate x:DataType="controls:FixedAspectCard">
+
+            <!--
+            The boarder around all card content. This is used to apply the background colour,
+            corner radius, and the tap command.
+            -->
+            <Border BackgroundColor="{TemplateBinding CardBackgroundColor}"
+                    StrokeThickness="0">
+
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="{TemplateBinding CornerRadius}" />
+                </Border.StrokeShape>
+
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Command="{TemplateBinding CardTappedCommand}" />
+                </Border.GestureRecognizers>
+
+                <!--
+                ContentPresenter to display the content property of the control when used in XAML.
+                This is displayed within the card's styling applied by the ControlTemplate.
+                -->
+                <ContentPresenter />
+
+            </Border>
+
+        </ControlTemplate>
+    </ContentView.ControlTemplate>
+
+</ContentView>

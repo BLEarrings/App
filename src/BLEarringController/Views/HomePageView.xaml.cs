@@ -1,10 +1,10 @@
 ﻿namespace BLEarringController.Views
 {
-    public partial class HomePage : ContentPage
+    public partial class HomePageView : ContentPage
     {
         #region Construction
 
-        public HomePage()
+        public HomePageView()
         {
             InitializeComponent();
         }

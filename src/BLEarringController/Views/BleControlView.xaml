@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModels="using:BLEarringController.ViewModels"
+             xmlns:controls="using:BLEarringController.Controls"
+             xmlns:converters="using:BLEarringController.Converters"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="BLEarringController.Views.BleControlView"
+             x:DataType="viewModels:BleControlViewModel"
+             Shell.PresentationMode="ModalAnimated">
+
+    <ContentPage.BindingContext>
+        <!-- TODO: This feels a bit clunky, but for only a couple of views should be fine. -->
+        <viewModels:BleControlViewModel />
+    </ContentPage.BindingContext>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <converters:ContrastingTextColourConverter x:Key="ContrastingTextColourConverter" />
+            <converters:GuidToMacStringConverter x:Key="GuidToMacStringConverter" />
+            <toolkit:IsNullConverter x:Key="IsNullConverter"/>
+            <toolkit:IsNotNullConverter x:Key="IsNotNullConverter"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <Grid Margin="20,10,20,20"
+          RowSpacing="20">
+
+        <Grid.RowDefinitions>
+            <!-- Card showing basic information about the BLE device. -->
+            <RowDefinition Height="Auto" />
+            <!-- Colour picker sliders. -->
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <!-- TODO: Temporary aspect ratio slider. -->
+            <RowDefinition Height="Auto" />
+            <!--
+            Row to take up remaining space on the page, to ensure the button stays at the bottom of
+            the page.
+            -->
+            <RowDefinition Height="*" />
+            <!-- Button to send the colour to the BLE device. -->
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Fixed aspect ratio card to display information about the BLE device. -->
+        <controls:FixedAspectCard Grid.Row="0"
+                                  CardBackgroundColor="DimGray"
+                                  AspectRatio="{Binding CardAspectRatio}"
+                                  CardTappedCommand="{Binding SelectDeviceCommand}">
+
+            <Grid x:Name="CardContentGrid"
+                  Margin="10"
+                  ColumnSpacing="10">
+
+                <Grid.RowDefinitions>
+                    <!-- Top row used for the start of the image, and the settings icon. -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Row used for the BLE device name. -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Row used for the BLE device MAC address. -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Row used for the BLE device RSSI. -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Last row used to take up all remaining space. -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid.ColumnDefinitions>
+                    <!-- First column is used to display an image of the device. -->
+                    <ColumnDefinition Width="Auto"/>
+                    <!-- Middle column is used to display text properties of the BLE device. -->
+                    <ColumnDefinition Width="*"/>
+                    <!-- Last column is used to display the settings icon. -->
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- TODO: Add image of the device. -->
+                <!--
+                Placeholder for the device image.
+
+                The image will also be used to display the selected colour as a preview. The image
+                will span across all rows.
+                -->
+                <Border Grid.Column="0"
+                        Grid.Row="0"
+                        Grid.RowSpan="{Binding RowDefinitions.Count, Source={x:Reference CardContentGrid}, x:DataType='Grid'}"
+                        BackgroundColor="{Binding SelectedColor}">
+
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10"/>
+                    </Border.StrokeShape>
+
+                    <Label Text="Image Placeholder"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           Padding="5"
+                           TextColor="{Binding SelectedColor, Converter={StaticResource ContrastingTextColourConverter}}"/>
+
+                </Border>
+
+                <!-- Label to display the device name. -->
+                <Label Grid.Column="1"
+                       Grid.Row="1"
+                       Text="{Binding SelectedBleDevice.Name,  FallbackValue={Binding NoBleDeviceName}, TargetNullValue={Binding BleDeviceNullFallback}}"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center" />
+
+                <!-- Label to display the device MAC address. -->
+                <Label Grid.Column="1"
+                       Grid.Row="2"
+                       Text="{Binding SelectedBleDevice.Id, FallbackValue={Binding BleDeviceNullFallback}, Converter={StaticResource GuidToMacStringConverter}}"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center" />
+
+                <!-- TODO: Update this value as a "live" value. -->
+                <!-- Label to display the RSSI value. -->
+                <Label Grid.Column="1"
+                       Grid.Row="3"
+                       Text="{Binding SelectedBleDevice.Rssi, FallbackValue={Binding BleDeviceNullFallback}}"
+                       HorizontalOptions="Start"
+                       VerticalOptions="Center" />
+
+                <!--
+                Content displayed over the entire card before a device is selected. This hints to
+                the user to click the card and select a device.
+
+                Once a device is selected, it becomes invisible to reveal the information behind
+                it.
+                -->
+                <Border Grid.Column="0"
+                        Grid.Row="0"
+                        Grid.ColumnSpan="{Binding ColumnDefinitions.Count, Source={x:Reference CardContentGrid}, x:DataType='Grid'}"
+                        Grid.RowSpan="{Binding RowDefinitions.Count, Source={x:Reference CardContentGrid}, x:DataType='Grid'}"
+                        IsVisible="{Binding SelectedBleDevice, Converter={StaticResource IsNullConverter}}"
+                        BackgroundColor="DimGray"
+                        StrokeThickness="0">
+
+                    <Label Text="{Binding NoDeviceSelectedCardText}"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center" />
+
+                </Border>
+
+                <!-- TODO: Add settings icon. -->
+                <!-- Settings icon to hint that clicking the card opens a modal. -->
+                <Border Grid.Column="2"
+                        Grid.Row="0"
+                        HeightRequest="25"
+                        WidthRequest="25"
+                        BackgroundColor="Fuchsia">
+
+                    <Border.StrokeShape>
+                        <!-- Ellipse to make the border round. -->
+                        <Ellipse />
+                    </Border.StrokeShape>
+
+                </Border>
+
+            </Grid>
+
+        </controls:FixedAspectCard>
+
+        <!-- Sliders to allow the user to select a red, green and blue value. -->
+        <Slider Grid.Row="1"
+                Value="{Binding RedSliderValue}"
+                ThumbColor="{Binding RedThumbColor}"
+                Maximum="255"
+                MaximumTrackColor="DarkRed"
+                Minimum="0"
+                MinimumTrackColor="Red" />
+
+        <Slider Grid.Row="2"
+                Value="{Binding GreenSliderValue}"
+                ThumbColor="{Binding GreenThumbColor}"
+                Maximum="255"
+                MaximumTrackColor="DarkGreen"
+                Minimum="0"
+                MinimumTrackColor="Green" />
+
+        <Slider Grid.Row="3"
+                Value="{Binding BlueSliderValue}"
+                ThumbColor="{Binding BlueThumbColor}"
+                Maximum="255"
+                MaximumTrackColor="DarkBlue"
+                Minimum="0"
+                MinimumTrackColor="Blue" />
+
+        <!-- TODO: Temporary slider to adjust card aspect ratio. -->
+        <Slider Grid.Row="4"
+                Value="{Binding CardAspectRatio}"
+                ThumbColor="Fuchsia"
+                Maximum="3"
+                MaximumTrackColor="DeepPink"
+                Minimum="1"
+                MinimumTrackColor="Fuchsia" />
+
+        <!-- TODO: Reduce Grid.Row to 5 when above slider is removed. -->
+        <!--
+        Button to send the selected colour to the BLE device. This is disabled when a device is not
+        selected.
+        -->
+        <Button Grid.Row="6"
+                Text="{Binding SendColourButtonText}"
+                Command="{Binding SendColourCommand}"
+                IsEnabled="{Binding SelectedBleDevice, Converter={StaticResource IsNotNullConverter}}"/>
+    </Grid>
+
+</ContentPage>
