@@ -9,11 +9,6 @@
              x:DataType="viewModels:BleScanViewModel"
              Shell.PresentationMode="ModalAnimated">
 
-    <ContentPage.BindingContext>
-        <!-- TODO: This feels a bit clunky, but for only a couple of views should be fine. -->
-        <viewModels:BleScanViewModel />
-    </ContentPage.BindingContext>
-
     <ContentPage.Resources>
         <ResourceDictionary>
             <converters:GuidToMacStringConverter x:Key="GuidMacConverter" />
