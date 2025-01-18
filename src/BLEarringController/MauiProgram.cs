@@ -38,6 +38,18 @@ namespace BLEarringController
                     // re-instantiated each time they are referenced.
                     .WithTransientLifetime()
 
+                // All ViewModels will implement IViewModel, so filter out all classes that
+                // implement IViewModel from the list of all public, none-abstract classes within
+                // the assembly.
+                .AddClasses(classes => classes.AssignableTo<IViewModel>())
+                    // Register each matching type as itself, as they will only be referred to by
+                    // name since each View will request a specific ViewModel.
+                    .AsSelf()
+                    // Register the ViewModels with a transient lifetime so they are
+                    // re-instantiated for each reference by a View, ensuring a consistent state
+                    // when each View is created.
+                    .WithTransientLifetime());
+
             return builder.Build();
         }
 
