@@ -1,4 +1,6 @@
-﻿using CommunityToolkit.Maui;
+﻿using BLEarringController.Services;
+using BLEarringController.ViewModels;
+using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 
 namespace BLEarringController
@@ -24,6 +26,41 @@ namespace BLEarringController
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
+
+            // Use Scrutor to scan the assembly and register services and classes with the
+            // dependency injection container.
+            builder.Services.Scan(scan => scan
+                // Use the ISingletonService interface to get the assembly to scan. At least for
+                // now, all views and services should be in the same assembly.
+                .FromAssemblyOf<ISingletonService>()
+
+                // ------------------------------ Singleton Services ------------------------------
+
+                // Singleton services should all implement ISingletonService, so filter out all
+                // classes that implement ISingletonService from the list of all public,
+                // none-abstract classes within the assembly.
+                .AddClasses(classes => classes.AssignableTo<ISingletonService>())
+                // Register each matching type as all of its implemented interfaces, which all
+                // return an instance of the main type. This allows consumers to reference the
+                // services by an interface they implement or by the class name.
+                .AsSelfWithInterfaces()
+                // Register the classes with a singleton lifetime so a single instance will
+                // exist for the lifetime of the app.
+                .WithSingletonLifetime()
+
+                // ------------------------------ Transient Services ------------------------------
+
+                // Transient services should all implement ITransientService, so filter out all
+                // classes that implement ITransientService from the list of all public,
+                // none-abstract classes within the assembly.
+                .AddClasses(classes => classes.AssignableTo<ITransientService>())
+                // Register each matching type as all of its implemented interfaces, which all
+                // return an instance of the main type. This allows consumers to reference the
+                // services by an interface they implement or by the class name.
+                .AsSelfWithInterfaces()
+                // Register the classes with a transient lifetime, so new instances are
+                // returned each time they are requested.
+                .WithTransientLifetime()
 
                 // ----------------------------- Views and ViewModels -----------------------------
 
