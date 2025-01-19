@@ -87,14 +87,14 @@ namespace BLEarringController.ViewModels
 
         #region Construction
 
-        public BleScanViewModel()
+        public BleScanViewModel(IAdapter bleAdapter, IBluetoothLE bleImplementation)
         {
+            // Store injected dependencies.
+            _bleAdapter = bleAdapter;
+            _bleImplementation = bleImplementation;
+
             // Initialise the FoundDevices collection to be empty before a scan has run.
             FoundDevices = [];
-
-            // Convenient variables to access the current IBluetoothLE and IAdapter objects.
-            _bleImplementation = CrossBluetoothLE.Current;
-            _bleAdapter = _bleImplementation.Adapter;
 
             // Create commands to invoke methods when UI buttons are clicked.
             ScanCommand = new Command(ScanCommandTask);

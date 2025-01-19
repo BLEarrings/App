@@ -2,6 +2,7 @@
 using BLEarringController.ViewModels;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using Plugin.BLE;
 
 namespace BLEarringController
 {
@@ -26,6 +27,8 @@ namespace BLEarringController
 #if DEBUG
     		builder.Logging.AddDebug();
 #endif
+
+            // ----------------------- Dependency Injection of Managed Code -----------------------
 
             // Use Scrutor to scan the assembly and register services and classes with the
             // dependency injection container.
@@ -86,6 +89,14 @@ namespace BLEarringController
                     // re-instantiated for each reference by a View, ensuring a consistent state
                     // when each View is created.
                     .WithTransientLifetime());
+
+            // ------------------------ Dependency Injection for Libraries ------------------------
+
+            // Add singletons from Plugin.BLE library so they can be dependency injected into
+            // ViewModels.
+            builder.Services
+                .AddSingleton(CrossBluetoothLE.Current)          // IBluetoothLE implementation.
+                .AddSingleton(CrossBluetoothLE.Current.Adapter); // IAdapter implementation.
 
             return builder.Build();
         }
