@@ -3,7 +3,7 @@
 namespace BLEarringController.Services
 {
     /// <summary>
-    /// A transient service that allows displaying pop-ups to the user. This provides a central
+    /// A singleton service that allows displaying pop-ups to the user. This provides a central
     /// class which implements different notification types, and is also used to wrap methods that
     /// require a <see cref="Page"/>, so that ViewModels are able to display notifications without
     /// referencing the Views.
