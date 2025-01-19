@@ -1,4 +1,7 @@
-﻿namespace BLEarringController.Services
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+
+namespace BLEarringController.Services
 {
     /// <inheritdoc cref="INotificationManager" />
     public class NotificationManager : INotificationManager
@@ -145,6 +148,20 @@
                 maxLength,
                 keyboard,
                 initialText);
+        }
+
+        /// <inheritdoc />
+        public Task DisplayToast(string message, ToastDuration duration, double textSize)
+        {
+            // Create a toast with a message, duration, and text size, and immediately show it.
+            return Toast.Make(message, duration, textSize).Show();
+        }
+
+        /// <inheritdoc />
+        public Task DisplayToast(string message, ToastDuration duration)
+        {
+            // Create a toast with a message and duration, and immediately show it.
+            return Toast.Make(message, duration).Show();
         }
 
         #endregion

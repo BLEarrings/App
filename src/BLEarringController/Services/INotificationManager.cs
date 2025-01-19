@@ -1,13 +1,19 @@
-﻿namespace BLEarringController.Services
+﻿using CommunityToolkit.Maui.Core;
+
+namespace BLEarringController.Services
 {
     /// <summary>
-    /// A transient service that allows displaying pop-ups to the user. This is used to wrap
-    /// methods that require a <see cref="Page"/>, so that ViewModels are able to display
-    /// notifications without referencing the Views.
+    /// A transient service that allows displaying pop-ups to the user. This provides a central
+    /// class which implements different notification types, and is also used to wrap methods that
+    /// require a <see cref="Page"/>, so that ViewModels are able to display notifications without
+    /// referencing the Views.
     /// <para>
     /// Following the conventions from the
     /// <see href="https://learn.microsoft.com/en-us/dotnet/maui/user-interface/pop-ups">MAUI
-    /// documentation on pop-ups</see>, the following naming conventions are maintained:
+    /// documentation on pop-ups</see> and the
+    /// <see href="https://learn.microsoft.com/en-us/dotnet/communitytoolkit/maui/alerts/toast">
+    /// MAUI CommunityToolkit documentation on toasts</see>, the following naming conventions are
+    /// maintained:
     /// <list type="bullet">
     ///     <item>
     ///         <term>Alert</term>
@@ -27,6 +33,13 @@
     ///         <term>Prompt</term>
     ///         <description>
     ///         A pop-up that prompts the user and allows them to enter data using the keyboard.
+    ///         </description>
+    ///     </item>
+    ///     <item>
+    ///         <term>Toast</term>
+    ///         <description>
+    ///         A non-interactable popup which displays information to the user for a fixed period
+    ///         of time.
     ///         </description>
     ///     </item>
     /// </list>
@@ -242,6 +255,45 @@
             int maxLength,
             Keyboard keyboard,
             string initialText);
+
+        /// <summary>
+        /// Display a toast which will automatically be dismissed after a fixed time.
+        /// </summary>
+        /// <remarks>
+        /// Note that repeated calls will automatically dismiss the previous toast, even if the
+        /// toast duration has not elapsed yet.
+        /// <para>
+        /// To use the default text size, use <see cref="DisplayToast(string,ToastDuration)"/>.
+        /// </para>
+        /// </remarks>
+        /// <param name="message">The text to display on the toast.</param>
+        /// <param name="duration">
+        /// The <see cref="ToastDuration"/> to display the toast for.
+        /// </param>
+        /// <param name="textSize">The text size to use for the toast message.</param>
+        /// <returns>
+        /// A <see cref="Task"/> that will be completed when the toast is shown.
+        /// </returns>
+        Task DisplayToast(string message, ToastDuration duration, double textSize);
+
+        /// <summary>
+        /// Display a toast which will automatically be dismissed after a fixed time.
+        /// </summary>
+        /// <remarks>
+        /// Note that repeated calls will automatically dismiss the previous toast, even if the
+        /// toast duration has not elapsed yet.
+        /// <para>
+        /// To change the text size, use <see cref="DisplayToast(string,ToastDuration,double)"/>.
+        /// </para>
+        /// </remarks>
+        /// <param name="message">The text to display on the toast.</param>
+        /// <param name="duration">
+        /// The <see cref="ToastDuration"/> to display the toast for.
+        /// </param>
+        /// <returns>
+        /// A <see cref="Task"/> that will be completed when the toast is shown.
+        /// </returns>
+        Task DisplayToast(string message, ToastDuration duration);
 
         #endregion
 
