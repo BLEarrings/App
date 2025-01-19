@@ -45,10 +45,6 @@ namespace BLEarringController.Services
     /// </list>
     /// </para>
     /// </summary>
-    /// <remarks>
-    /// For now, this only wraps the built-in MAUI pop-up methods on a <see cref="Page"/>, but this
-    /// may be expanded in the future.
-    /// </remarks>
     public interface INotificationManager : ISingletonService
     {
         #region Methods
