@@ -43,13 +43,13 @@ namespace BLEarringController
                 // classes that implement ISingletonService from the list of all public,
                 // none-abstract classes within the assembly.
                 .AddClasses(classes => classes.AssignableTo<ISingletonService>())
-                // Register each matching type as all of its implemented interfaces, which all
-                // return an instance of the main type. This allows consumers to reference the
-                // services by an interface they implement or by the class name.
-                .AsSelfWithInterfaces()
-                // Register the classes with a singleton lifetime so a single instance will
-                // exist for the lifetime of the app.
-                .WithSingletonLifetime()
+                    // Register each matching type as all of its implemented interfaces, which all
+                    // return an instance of the main type. This allows consumers to reference the
+                    // services by an interface they implement or by the class name.
+                    .AsSelfWithInterfaces()
+                    // Register the classes with a singleton lifetime so a single instance will
+                    // exist for the lifetime of the app.
+                    .WithSingletonLifetime()
 
                 // ------------------------------ Transient Services ------------------------------
 
@@ -57,13 +57,13 @@ namespace BLEarringController
                 // classes that implement ITransientService from the list of all public,
                 // none-abstract classes within the assembly.
                 .AddClasses(classes => classes.AssignableTo<ITransientService>())
-                // Register each matching type as all of its implemented interfaces, which all
-                // return an instance of the main type. This allows consumers to reference the
-                // services by an interface they implement or by the class name.
-                .AsSelfWithInterfaces()
-                // Register the classes with a transient lifetime, so new instances are
-                // returned each time they are requested.
-                .WithTransientLifetime()
+                    // Register each matching type as all of its implemented interfaces, which all
+                    // return an instance of the main type. This allows consumers to reference the
+                    // services by an interface they implement or by the class name.
+                    .AsSelfWithInterfaces()
+                    // Register the classes with a transient lifetime, so new instances are
+                    // returned each time they are requested.
+                    .WithTransientLifetime()
 
                 // ----------------------------- Views and ViewModels -----------------------------
 
