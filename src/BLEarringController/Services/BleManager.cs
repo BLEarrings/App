@@ -2,6 +2,7 @@
 using System.Text;
 using BLEarringController.Ble;
 using BLEarringController.Ble.Services;
+using CommunityToolkit.Maui.Core;
 using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 using Plugin.BLE.Abstractions.EventArgs;
@@ -260,6 +261,11 @@ namespace BLEarringController.Services
                         _foundDevices.Add(connectedDevice);
                     }
                 }
+
+                // Show a toast indicating how many devices were found.
+                await _notificationManager.DisplayToast(
+                    $"Scan finished. Found {_foundDevices.Count} devices.",
+                    ToastDuration.Long);
             }
             catch (DeviceDiscoverException ex)
             {
@@ -343,8 +349,12 @@ namespace BLEarringController.Services
                     }
                     else
                     {
-                        // TODO: Display popup with result code for debugging.
+                        // TODO: This currently conflicts with an alert on calling ViewModels.
                         // TODO: Switch result to display error messages?
+                        await _notificationManager.DisplayAlert(
+                            "Failed to set colour on BLE device",
+                            $"Nordic UART RX characteristic returned code {writeResult}.");
+
                         Debug.Assert(false);
                     }
                 }
