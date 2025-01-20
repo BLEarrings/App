@@ -236,19 +236,26 @@ namespace BLEarringController.ViewModels
             // If no device is selected, colour cannot be sent so just return.
             if (SelectedBleDevice == null)
             {
-                // TODO: display popup to user.
+                await _notificationManager.DisplayAlert(
+                    "No device selected.",
+                    "Could not transmit a colour to the device, as one is not currently selected.");
                 return;
             }
-            // Ensure device is connected before colour can be sent.;
+            // Ensure device is connected before colour can be sent.
             if (!await _bleManager.Connect(SelectedBleDevice))
             {
-                // TODO: display popup to user.
+                await _notificationManager.DisplayAlert(
+                    "Could not connect to device",
+                    "Attempting to connect to the selected device failed.");
                 return;
             }
 
             if (!await _bleManager.SetColour(SelectedBleDevice, SelectedColor))
             {
-                // TODO: Notify user that sending the colour failed.
+                // TODO: This error is very generic. Can it be improved.
+                await _notificationManager.DisplayAlert(
+                 "Failed to send colour",
+                 "The colour could not be set on the device.");
             }
         }
 
