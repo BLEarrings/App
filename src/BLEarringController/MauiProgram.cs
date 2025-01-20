@@ -10,31 +10,36 @@ namespace BLEarringController
     {
         #region Methods
 
-        #region Public Static
+        #region Private Static
 
-        public static MauiApp CreateMauiApp()
+        /// <summary>
+        /// Manually register services from libraries that do not natively support
+        /// <see href="https://learn.microsoft.com/en-us/dotnet/api/microsoft.extensions.dependencyinjection">
+        /// Microsoft.Extensions.DependencyInjection</see>.
+        /// </summary>
+        /// <param name="services">
+        /// The <see cref="IServiceCollection"/> to register the services with.
+        /// </param>
+        private static void RegisterLibraryServices(in IServiceCollection services)
         {
-            var builder = MauiApp.CreateBuilder();
-            builder
-                .UseMauiApp<App>()
-                .UseMauiCommunityToolkit()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                });
+            services
+                // Register services from the Plugin.BLE library.
+                .AddSingleton(CrossBluetoothLE.Current)          // IBluetoothLE implementation.
+                .AddSingleton(CrossBluetoothLE.Current.Adapter); // IAdapter implementation.
+        }
 
-#if DEBUG
-    		builder.Logging.AddDebug();
-#endif
-
-            // ----------------------- Dependency Injection of Managed Code -----------------------
-
-            // Use Scrutor to scan the assembly and register services and classes with the
-            // dependency injection container.
-            builder.Services.Scan(scan => scan
-                // Use the ISingletonService interface to get the assembly to scan. At least for
-                // now, all views and services should be in the same assembly.
+        /// <summary>
+        /// Register the app's services with the dependency injection container.
+        /// </summary>
+        /// <param name="services">
+        /// The <see cref="IServiceCollection"/> to register the services with.
+        /// </param>
+        private static void RegisterServices(in IServiceCollection services)
+        {
+            // Use Scrutor to scan the assembly and register services with the dependency injection
+            // container.
+            services.Scan(scan => scan
+                // Use the ISingletonService interface to get the assembly to scan.
                 .FromAssemblyOf<ISingletonService>()
 
                 // ------------------------------ Singleton Services ------------------------------
@@ -63,9 +68,26 @@ namespace BLEarringController
                     .AsSelfWithInterfaces()
                     // Register the classes with a transient lifetime, so new instances are
                     // returned each time they are requested.
-                    .WithTransientLifetime()
+                    .WithTransientLifetime());
+        }
 
-                // ----------------------------- Views and ViewModels -----------------------------
+        /// <summary>
+        /// Register all Views and ViewModels within the app with the dependency injection
+        /// container.
+        /// </summary>
+        /// <param name="services">
+        /// The <see cref="IServiceCollection"/> to register the services with.
+        /// </param>
+        private static void RegisterViewsAndViewModels(in IServiceCollection services)
+        {
+            // Use Scrutor to scan the assembly and register Views and ViewModels with the
+            // dependency injection container.
+            services.Scan(scan => scan
+                // Use the IViewModel interface to get the assembly to scan. For now assume all
+                // Views will be in the same assembly as the ViewModels.
+                .FromAssemblyOf<IViewModel>()
+
+                // ------------------------------------ Views -------------------------------------
 
                 // All Views will derive from ContentPage, so filter out all classes that derive
                 // from ContentPage from the list of all public, none-abstract classes within the
@@ -78,6 +100,8 @@ namespace BLEarringController
                     // re-instantiated each time they are referenced.
                     .WithTransientLifetime()
 
+                // ---------------------------------- ViewModels ----------------------------------
+
                 // All ViewModels will implement IViewModel, so filter out all classes that
                 // implement IViewModel from the list of all public, none-abstract classes within
                 // the assembly.
@@ -89,14 +113,40 @@ namespace BLEarringController
                     // re-instantiated for each reference by a View, ensuring a consistent state
                     // when each View is created.
                     .WithTransientLifetime());
+        }
 
-            // ------------------------ Dependency Injection for Libraries ------------------------
+        #endregion
 
-            // Add singletons from Plugin.BLE library so they can be dependency injected into
-            // ViewModels.
-            builder.Services
-                .AddSingleton(CrossBluetoothLE.Current)          // IBluetoothLE implementation.
-                .AddSingleton(CrossBluetoothLE.Current.Adapter); // IAdapter implementation.
+        #region Public Static
+
+        public static MauiApp CreateMauiApp()
+        {
+            var builder = MauiApp.CreateBuilder();
+            builder
+                .UseMauiApp<App>()
+                .UseMauiCommunityToolkit()
+                .ConfigureFonts(fonts =>
+                {
+                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                });
+
+#if DEBUG
+    		builder.Logging.AddDebug();
+#endif
+
+            // ------------------------ Dependency Injection Registrations ------------------------
+
+            // Register all services within the app.
+            RegisterServices(builder.Services);
+
+            // Register services from libraries.
+            RegisterLibraryServices(builder.Services);
+
+            // Register Views and ViewModels within the app.
+            RegisterViewsAndViewModels(builder.Services);
+
+            // ------------------------------------------------------------------------------------
 
             return builder.Build();
         }
