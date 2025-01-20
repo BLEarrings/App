@@ -3,8 +3,6 @@ using System.Text;
 using BLEarringController.Ble;
 using BLEarringController.Ble.Services;
 using BLEarringController.Views;
-using Plugin.BLE;
-using Plugin.BLE.Abstractions;
 using Plugin.BLE.Abstractions.Contracts;
 
 namespace BLEarringController.ViewModels
@@ -20,11 +18,6 @@ namespace BLEarringController.ViewModels
         /// <see cref="_bleImplementation"/>.
         /// </summary>
         private readonly IAdapter _bleAdapter;
-
-        /// <summary>
-        /// The current <see cref="IBluetoothLE"/> implementation on the device.
-        /// </summary>
-        private readonly IBluetoothLE _bleImplementation;
 
         /// <summary>
         /// Backing variable for <see cref="BlueSliderValue"/>.
@@ -260,33 +253,13 @@ namespace BLEarringController.ViewModels
                 if (await SelectedBleDevice.GetServiceAsync(NordicUart.ServiceGuid) is { } uartService
                     && await uartService.GetCharacteristicAsync(NordicUart.RxCharacteristicGuid) is { CanWrite: true } rxCharacteristic)
                 {
-                    // TODO: This is for testing. A proper packet structure needs to be agreed.
-                    // Convert the selected red, green and blue values to an arbitrary string to
-                    // send to the device.
-                    var payloadBytes = Encoding.UTF8.GetBytes($"{RedSliderValue},{GreenSliderValue},{BlueSliderValue}");
-
-                    // TODO: Only negotiate the MTU size once per connection.
-                    // Try and negotiate the largest MTU size possible.
-                    var currentMtu = await SelectedBleDevice.RequestMtuAsync(BleConstants.MaxMtuSize);
-
-                    // In debug, ensure the packet can be transmitted with the given MTU.
-                    Debug.Assert(payloadBytes.Length <= currentMtu - BleConstants.AttProtocolOverhead);
-
-                    // Attempt to write the payload to the RX characteristic.
-                    var writeResult = await rxCharacteristic.WriteAsync(payloadBytes);
-
-                    if (writeResult != 0)
-                    {
-                        // TODO: Display popup.
-                        // TODO: Switch result to display error messages?
-                        Debug.Assert(false);
-                    }
+                    // TODO: Notify user that sending the colour failed.
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                // Catch all exceptions here and break in debug, as it is unexpected.
-                Debug.Assert(false, ex.Message);
+                // Ignore.
+                // TODO: Log exception to user.
             }
         }
 
