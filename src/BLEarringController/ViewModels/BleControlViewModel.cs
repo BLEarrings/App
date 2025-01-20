@@ -1,10 +1,6 @@
-﻿using System.Diagnostics;
-using System.Text;
-using BLEarringController.Ble;
-using BLEarringController.Ble.Services;
+﻿using BLEarringController.Services;
 using BLEarringController.Views;
-using Plugin.BLE;
-using Plugin.BLE.Abstractions;
+using CommunityToolkit.Mvvm.Input;
 using Plugin.BLE.Abstractions.Contracts;
 
 namespace BLEarringController.ViewModels
@@ -16,15 +12,9 @@ namespace BLEarringController.ViewModels
         #region Private
 
         /// <summary>
-        /// The current <see cref="IAdapter"/> used by the current
-        /// <see cref="_bleImplementation"/>.
+        /// The singleton service used to interact with BLE devices.
         /// </summary>
-        private readonly IAdapter _bleAdapter;
-
-        /// <summary>
-        /// The current <see cref="IBluetoothLE"/> implementation on the device.
-        /// </summary>
-        private readonly IBluetoothLE _bleImplementation;
+        private readonly IBleManager _bleManager;
 
         /// <summary>
         /// Backing variable for <see cref="BlueSliderValue"/>.
@@ -42,6 +32,11 @@ namespace BLEarringController.ViewModels
         private int _greenSliderValue;
 
         /// <summary>
+        /// Service used to display notifications to the user.
+        /// </summary>
+        private readonly INotificationManager _notificationManager;
+
+        /// <summary>
         /// Backing variable for <see cref="RedSliderValue"/>.
         /// </summary>
         private int _redSliderValue;
@@ -57,15 +52,15 @@ namespace BLEarringController.ViewModels
 
         #region Construction
 
-        public BleControlViewModel()
+        public BleControlViewModel(IBleManager bleManager, INotificationManager notificationManager)
         {
-            // Convenient variables to access the current IBluetoothLE and IAdapter objects.
-            _bleImplementation = CrossBluetoothLE.Current;
-            _bleAdapter = _bleImplementation.Adapter;
+            // Store injected dependencies.
+            _bleManager = bleManager;
+            _notificationManager = notificationManager;
 
             // Create commands to invoke methods when UI buttons are clicked.
-            SelectDeviceCommand = new Command(SelectDeviceCommandTask);
-            SendColourCommand = new Command(SendColourCommandTask);
+            SelectDeviceCommand = new AsyncRelayCommand(SelectDeviceCommandTask);
+            SendColourCommand = new AsyncRelayCommand(SendColourCommandTask);
         }
 
         #endregion
@@ -183,9 +178,10 @@ namespace BLEarringController.ViewModels
         public Color RedThumbColor => Color.FromRgb(_redSliderValue, 0, 0);
 
         /// <summary>
-        /// The <see cref="Command"/> that will wrap the <see cref="SelectDeviceCommandTask"/>.
+        /// The <see cref="IRelayCommand"/> that will wrap the
+        /// <see cref="SelectDeviceCommandTask"/>.
         /// </summary>
-        public Command SelectDeviceCommand { get; }
+        public IRelayCommand SelectDeviceCommand { get; }
 
         /// <summary>
         /// The currently selected <see cref="IDevice"/>.
@@ -220,9 +216,9 @@ namespace BLEarringController.ViewModels
         public string SendColourButtonText => "Send colour to device";
 
         /// <summary>
-        /// The <see cref="Command"/> that will wrap the <see cref="SendColourCommandTask"/>.
+        /// The <see cref="IRelayCommand"/> that will wrap the <see cref="SendColourCommandTask"/>.
         /// </summary>
-        public Command SendColourCommand { get; }
+        public IRelayCommand SendColourCommand { get; }
 
         #endregion
 
@@ -235,58 +231,31 @@ namespace BLEarringController.ViewModels
         /// <summary>
         /// Send the <see cref="SelectedColor"/> to the <see cref="SelectedBleDevice"/>.
         /// </summary>
-        private async void SendColourCommandTask()
+        private async Task SendColourCommandTask()
         {
-            // Wrap the entire method in a try-catch to prevent exceptions crashing the process,
-            // since this is an async void.
-            try
+            // If no device is selected, colour cannot be sent so just return.
+            if (SelectedBleDevice == null)
             {
-                // If no device is selected, colour cannot be sent so just return.
-                if (SelectedBleDevice == null)
-                {
-                    // TODO: display popup to user.
-                    return;
-                }
-                // Ensure device is connected before colour can be sent.
-                await _bleAdapter.ConnectToDeviceAsync(SelectedBleDevice);
-                if (SelectedBleDevice.State != DeviceState.Connected)
-                {
-                    // TODO: display popup to user.
-                    return;
-                }
-
-                // Get the Nordic UART Service and RX characteristic from the device to send the
-                // colour to.
-                if (await SelectedBleDevice.GetServiceAsync(NordicUart.ServiceGuid) is { } uartService
-                    && await uartService.GetCharacteristicAsync(NordicUart.RxCharacteristicGuid) is { CanWrite: true } rxCharacteristic)
-                {
-                    // TODO: This is for testing. A proper packet structure needs to be agreed.
-                    // Convert the selected red, green and blue values to an arbitrary string to
-                    // send to the device.
-                    var payloadBytes = Encoding.UTF8.GetBytes($"{RedSliderValue},{GreenSliderValue},{BlueSliderValue}");
-
-                    // TODO: Only negotiate the MTU size once per connection.
-                    // Try and negotiate the largest MTU size possible.
-                    var currentMtu = await SelectedBleDevice.RequestMtuAsync(BleConstants.MaxMtuSize);
-
-                    // In debug, ensure the packet can be transmitted with the given MTU.
-                    Debug.Assert(payloadBytes.Length <= currentMtu - BleConstants.AttProtocolOverhead);
-
-                    // Attempt to write the payload to the RX characteristic.
-                    var writeResult = await rxCharacteristic.WriteAsync(payloadBytes);
-
-                    if (writeResult != 0)
-                    {
-                        // TODO: Display popup.
-                        // TODO: Switch result to display error messages?
-                        Debug.Assert(false);
-                    }
-                }
+                await _notificationManager.DisplayAlert(
+                    "No device selected.",
+                    "Could not transmit a colour to the device, as one is not currently selected.");
+                return;
             }
-            catch (Exception ex)
+            // Ensure device is connected before colour can be sent.
+            if (!await _bleManager.Connect(SelectedBleDevice))
             {
-                // Catch all exceptions here and break in debug, as it is unexpected.
-                Debug.Assert(false, ex.Message);
+                await _notificationManager.DisplayAlert(
+                    "Could not connect to device",
+                    "Attempting to connect to the selected device failed.");
+                return;
+            }
+
+            if (!await _bleManager.SetColour(SelectedBleDevice, SelectedColor))
+            {
+                // TODO: This error is very generic. Can it be improved.
+                await _notificationManager.DisplayAlert(
+                 "Failed to send colour",
+                 "The colour could not be set on the device.");
             }
         }
 
@@ -314,21 +283,10 @@ namespace BLEarringController.ViewModels
         /// Opens the <see cref="KnownModals.BleScanView"/> to allow the user to select a
         /// <see cref="IDevice"/> from a BLE scan.
         /// </summary>
-        private static async void SelectDeviceCommandTask()
+        private static async Task SelectDeviceCommandTask()
         {
-            // Wrap the entire method in a try-catch to prevent exceptions crashing the process,
-            // since this is an async void.
-            try
-            {
-                // Open the BleScanView modal to allow the user to select a BLE device.
-                await Shell.Current.GoToAsync(KnownModals.BleScanView);
-            }
-            catch (Exception ex)
-            {
-                // TODO: Alert user!
-                // In Debug, always break here as this is unexpected!
-                Debug.Assert(false, ex.Message);
-            }
+            // Open the BleScanView modal to allow the user to select a BLE device.
+            await Shell.Current.GoToAsync(KnownModals.BleScanView);
         }
 
         #endregion

@@ -1,3 +1,5 @@
+using System.Windows.Input;
+
 namespace BLEarringController.Controls
 {
     /// <summary>
@@ -74,7 +76,7 @@ namespace BLEarringController.Controls
         /// The <see cref="BindableProperty"/> for the <see cref="CardTappedCommand"/>.
         /// </summary>
         public static readonly BindableProperty CardTappedCommandProperty =
-            BindableProperty.Create(nameof(CardTappedCommand), typeof(Command), typeof(FixedAspectCard));
+            BindableProperty.Create(nameof(CardTappedCommand), typeof(ICommand), typeof(FixedAspectCard));
 
         #endregion
 
@@ -115,11 +117,11 @@ namespace BLEarringController.Controls
         }
 
         /// <summary>
-        /// The <see cref="Command"/> that will be executed when anywhere on the card is tapped.
+        /// The <see cref="ICommand"/> that will be executed when anywhere on the card is tapped.
         /// </summary>
-        public Command? CardTappedCommand
+        public ICommand? CardTappedCommand
         {
-            get => (Command)GetValue(CardTappedCommandProperty);
+            get => (ICommand)GetValue(CardTappedCommandProperty);
             set => SetValue(CardTappedCommandProperty, value);
         }
 

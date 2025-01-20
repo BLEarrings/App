@@ -1,14 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Timers;
-using BLEarringController.Ble.Services;
+using BLEarringController.Services;
 using BLEarringController.Views;
-using Plugin.BLE;
-using Plugin.BLE.Abstractions;
+using CommunityToolkit.Mvvm.Input;
 using Plugin.BLE.Abstractions.Contracts;
-using Plugin.BLE.Abstractions.EventArgs;
-using Plugin.BLE.Abstractions.Exceptions;
-using Plugin.BLE.Abstractions.Extensions;
 using Timer = System.Timers.Timer;
 
 namespace BLEarringController.ViewModels
@@ -50,15 +46,14 @@ namespace BLEarringController.ViewModels
         #region Private
 
         /// <summary>
-        /// The current <see cref="IAdapter"/> used by the current
-        /// <see cref="_bleImplementation"/>.
+        /// The singleton service used to interact with BLE devices.
         /// </summary>
-        private readonly IAdapter _bleAdapter;
+        private readonly IBleManager _bleManager;
 
         /// <summary>
-        /// The current <see cref="IBluetoothLE"/> implementation on the device.
+        /// Service used to display notifications to the user.
         /// </summary>
-        private readonly IBluetoothLE _bleImplementation;
+        private readonly INotificationManager _notificationManager;
 
         /// <summary>
         /// Backing variable for <see cref="ScanHasRun"/>.
@@ -87,18 +82,18 @@ namespace BLEarringController.ViewModels
 
         #region Construction
 
-        public BleScanViewModel()
+        public BleScanViewModel(IBleManager bleManager, INotificationManager notificationManager)
         {
+            // Store injected dependencies.
+            _bleManager = bleManager;
+            _notificationManager = notificationManager;
+
             // Initialise the FoundDevices collection to be empty before a scan has run.
             FoundDevices = [];
 
-            // Convenient variables to access the current IBluetoothLE and IAdapter objects.
-            _bleImplementation = CrossBluetoothLE.Current;
-            _bleAdapter = _bleImplementation.Adapter;
-
             // Create commands to invoke methods when UI buttons are clicked.
-            ScanCommand = new Command(ScanCommandTask);
-            DeviceSelectedCommand = new Command(DeviceSelectedCommandTask);
+            ScanCommand = new AsyncRelayCommand(ScanCommandTask);
+            DeviceSelectedCommand = new AsyncRelayCommand<IDevice>(DeviceSelectedCommandTask);
 
             // Hook up the event handler that will update the ScanProgress.
             _scanProgressIntervalTimer.Elapsed += _scanProgressIntervalTimer_Elapsed;
@@ -128,9 +123,10 @@ namespace BLEarringController.ViewModels
         public string BeforeFirstScanText => "Start a scan to discover devices.";
 
         /// <summary>
-        /// The <see cref="Command"/> that will wrap the <see cref="DeviceSelectedCommandTask"/>.
+        /// The <see cref="IRelayCommand"/> that will wrap the
+        /// <see cref="DeviceSelectedCommandTask"/>.
         /// </summary>
-        public Command DeviceSelectedCommand { get; }
+        public IRelayCommand DeviceSelectedCommand { get; }
 
         /// <summary>
         /// A list of <see cref="IDevice"/>s discovered during the scan.
@@ -149,9 +145,9 @@ namespace BLEarringController.ViewModels
         public string ScanButtonText => "Start Scan";
 
         /// <summary>
-        /// The <see cref="Command"/> that will wrap the <see cref="ScanCommandTask"/>.
+        /// The <see cref="IRelayCommand"/> that will wrap the <see cref="ScanCommandTask"/>.
         /// </summary>
-        public Command ScanCommand { get; }
+        public IRelayCommand ScanCommand { get; }
 
         /// <summary>
         /// A <see cref="bool"/> representing whether a scan has been run yet or not.
@@ -218,32 +214,11 @@ namespace BLEarringController.ViewModels
 
         #endregion
 
-        #region Private Static
-
-        /// <summary>
-        /// A static <see cref="CancellationToken"/> generator, used to create a
-        /// <see cref="CancellationToken"/> that elapses after <see cref="ScanTimeout"/>
-        /// milliseconds. This is used to set the timeout for the BLE scan.
-        /// </summary>
-        private static CancellationToken ScanTimeoutToken => new CancellationTokenSource(ScanTimeout).Token;
-
-        #endregion
-
         #endregion
 
         #region Methods
 
         #region Event Handlers
-
-        /// <summary>
-        /// Handler for <see cref="IDevice"/>s that are discovered during the BLE scan.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void _bleAdapter_DeviceDiscovered(object? sender, DeviceEventArgs e)
-        {
-            FoundDevices.Add(e.Device);
-        }
 
         /// <summary>
         /// Handler for the <see cref="_scanProgressIntervalTimer"/> elapsing, indicating that the
@@ -260,118 +235,66 @@ namespace BLEarringController.ViewModels
 
         #region Private
 
-        // TODO: Bonding isn't currently required.
-        ///// <summary>
-        ///// Attempt to bond to an <see cref="IDevice"/>, and return a success <see cref="bool"/>.
-        ///// </summary>
-        ///// <param name="device">The <see cref="IDevice"/> to bond to.</param>
-        ///// <returns>
-        ///// <c>true</c> if the device was bonded successfully. <c>false</c> otherwise.
-        ///// </returns>
-        //private async Task<bool> BondToDevice(IDevice device)
-        //{
-        //    try
-        //    {
-        //        // Attempt to bond to the device.
-        //        await _bleAdapter.BondAsync(device);
-        //    }
-        //    catch
-        //    {
-        //        // Catch any exception, as the returned bool will already indicate whether the
-        //        // bonding operation was successful or not.
-        //    }
-
-        //    // Return true if the device is now "bonded".
-        //    return device.BondState == DeviceBondState.Bonded;
-        //}
-
         /// <summary>
-        /// Attempt to connect to an <see cref="IDevice"/>, and return a success
-        /// <see cref="bool"/>.
+        /// The method wrapped by <see cref="DeviceSelectedCommand"/> which returns from the
+        /// scan view with the selected device as a navigation parameter.
         /// </summary>
-        /// <param name="device">The <see cref="IDevice"/> to connect to.</param>
-        /// <returns>
-        /// <c>true</c> if the device was connected successfully. <c>false</c> otherwise.
-        /// </returns>
-        private async Task<bool> ConnectToDevice(IDevice device)
+        /// <param name="selectedDevice">The <see cref="IDevice"/> selected by the user.</param>
+        /// <returns></returns>
+        private async Task DeviceSelectedCommandTask(IDevice? selectedDevice)
         {
-            try
+            if (selectedDevice == null)
             {
-                // Attempt to connect to the device.
-                await _bleAdapter.ConnectToDeviceAsync(device);
+                // The selected device must be non-null for navigation to occur through selection.
+                return;
             }
-            catch
+            // TODO: Currently bonding is not required for the BLEarrings.
+            //if (!await _bleManager.Bond(selectedDevice))
+            //{
+            //    // TODO: Display alert indicating bonding failure.
+            //    return;
+            //}
+            if (!await _bleManager.Connect(selectedDevice))
             {
-                // Catch any exception, as the returned bool will already indicate whether the
-                // connection operation was successful or not.
+                await _notificationManager.DisplayAlert(
+                    "Failed to connect to device",
+                    "Could not connect to the selected device. Please try again.");
+                return;
             }
 
-            // Return true if the device is now connected.
-            return device.State == DeviceState.Connected;
-        }
-
-        private async void DeviceSelectedCommandTask(object? selectedItem)
-        {
-            // Try catch around the entire method to prevent an exception from crashing the
-            // process, as this method is an async void.
-            try
+            // A valid device has been selected and connected to. Create
+            // ShellNavigationQueryParameters to return the IDevice to the view that requested
+            // the device selection.
+            var navigationParameter = new ShellNavigationQueryParameters
             {
-                if (selectedItem is not IDevice selectedDevice)
-                {
-                    // Sanity check, ensure cast of object? to IDevice works.
-                    return;
-                }
-                // TODO: Currently bonding is not required for the BLEarrings.
-                //if (!await BondToDevice(selectedDevice))
-                //{
-                //    // TODO: Display alert indicating bonding failure.
-                //    return;
-                //}
-                if (!await ConnectToDevice(selectedDevice))
-                {
-                    // TODO: Display alert indicating device selection failure.
-                    return;
-                }
+                { NavigationQueryKeys.SelectedBleDeviceKey, selectedDevice }
+            };
 
-                // A valid device has been selected and connected to. Create
-                // ShellNavigationQueryParameters to return the IDevice to the view that requested
-                // the device selection.
-                var navigationParameter = new ShellNavigationQueryParameters
-                {
-                    { NavigationQueryKeys.SelectedBleDeviceKey, selectedDevice }
-                };
-
-                // Navigate back to the previous view, passing back the selected IDevice.
-                await Shell.Current.GoToAsync("..", navigationParameter);
-            }
-            catch (Exception ex)
-            {
-                // TODO: Warn the user.
-                // Always break here in debug, as this is unexpected...
-                Debug.Assert(false, ex.Message);
-            }
+            // Navigate back to the previous view, passing back the selected IDevice.
+            await Shell.Current.GoToAsync("..", navigationParameter);
         }
 
         /// <summary>
         /// The method wrapped by the <see cref="ScanCommand"/> which starts a BLE scan.
         /// </summary>
-        private async void ScanCommandTask()
+        private async Task ScanCommandTask()
         {
-            // The entire method is wrapped in a try-catch since it is an async void, which can
-            // cause the process to crash if an exception is raised. The BLE scan is fairly likely
-            // to throw an exception, so ensure it gets caught.
+            // Wait for the entire duration of a standard scan to enter the semaphore. If this
+            // fails, simply return as the scan cannot begin.
+            if (!await _scanSemaphore.WaitAsync(ScanTimeout))
+            {
+                await _notificationManager.DisplayAlert(
+                    "Failed to start BLE scan.",
+                    "Timed out waiting for the previous BLE scan to finish.");
+
+                return;
+            }
+
+            // A try-finally is used to ensure the semaphore is always released.
             try
             {
-                if (await Permissions.RequestAsync<Permissions.Bluetooth>() != PermissionStatus.Granted)
+                if (!await _bleManager.RequestPermission("Bluetooth permission is required to perform a BLE scan."))
                 {
-                    // TODO: Warn user with popup? Disable view until permission accepted?
-                    return;
-                }
-                if (!await _scanSemaphore.WaitAsync(ScanTimeout))
-                {
-                    // TODO: Warn user with popup?
-                    // Wait for the entire duration of a standard scan to enter the semaphore. If
-                    // this fails, simply return as the scan cannot begin.
                     return;
                 }
 
@@ -385,56 +308,26 @@ namespace BLEarringController.ViewModels
                 // Reset scan progress back to 0 at the start of the scan.
                 ScanProgress = 0;
 
-                // Prepare the options to use to filter scan results.
-                var scanFilterOptions = new ScanFilterOptions
-                {
-                    // Scan only for devices with the NordicUart service.
-                    ServiceUuids = [NordicUart.ServiceGuid]
-                };
-
-                // Scan using the highest duty cycle as the scan timeout is short.
-                _bleAdapter.ScanMode = ScanMode.LowLatency;
-
-                // Subscribe to DeviceDiscovered events, which will add the BLE devices to the
-                // FoundDevices collection as they are discovered.
-                _bleAdapter.DeviceDiscovered += _bleAdapter_DeviceDiscovered;
-
                 // Start incrementing the ScanProgress as close to starting the scan as possible,
                 // to try and ensure it accurately represents the scan progress.
                 _scanProgressIntervalTimer.Start();
 
-                // Perform a BLE scan, cancelling using the ScanTimeoutToken after the ScanTimeout.
-                await _bleAdapter.StartScanningForDevicesAsync(scanFilterOptions, ScanTimeoutToken);
+                // TODO: This will not update this list "live", but would feel more responsive if it did...
+                var foundDevices = await _bleManager.Scan(ScanTimeout);
 
-                // Devices that are already connected won't show up in the scan. Add any devices
-                // that are already connected, that have the Nordic UART Service in the
-                // advertisement records.
-                foreach (var connectedDevice in _bleAdapter.ConnectedDevices)
+                foreach (var device in foundDevices)
                 {
-                    if (connectedDevice.AdvertisementRecords.Any(IsNordicUartAdvertisementRecord))
-                    {
-                        FoundDevices.Add(connectedDevice);
-                    }
+                    FoundDevices.Add(device);
                 }
-            }
-            catch (DeviceDiscoverException ex)
-            {
-                // Exception raised whenever device discovery fails.
-                // TODO: Add a message popup to warn the user when this occurs.
-                Debug.Assert(false, ex.Message);
             }
             catch (Exception ex)
             {
-                // Catch any other exceptions that may be thrown from the OS.
-                // TODO: Add a message popup to warn the user when this occurs.
+                // TODO: Logging?
+                // This should never happen...
                 Debug.Assert(false, ex.Message);
             }
             finally
             {
-                // Always ensure the EventHandler is unsubscribed to ensure devices aren't
-                // duplicated during the next scan.
-                _bleAdapter.DeviceDiscovered -= _bleAdapter_DeviceDiscovered;
-
                 // Always stop incrementing the ScanProgress, and ensure it is indicated on the UI
                 // that the scan completed by forcing the progress bar to 100%.
                 _scanProgressIntervalTimer.Stop();
@@ -449,27 +342,6 @@ namespace BLEarringController.ViewModels
                 _scanSemaphore.Release();
                 NotifyPropertyChanged(nameof(ScanInProgress));
             }
-        }
-
-        #endregion
-
-        #region Private Static
-
-        /// <summary>
-        /// Checks an <see cref="AdvertisementRecord"/> to see if it advertises the
-        /// <see cref="NordicUart.ServiceId"/>.
-        /// </summary>
-        /// <param name="record">
-        /// The <see cref="AdvertisementRecord"/> to check.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if the <see cref="AdvertisementRecord"/> is for the Nordic Uart Service.
-        /// <c>false</c> otherwise.
-        /// </returns>
-        private static bool IsNordicUartAdvertisementRecord(AdvertisementRecord record)
-        {
-            return record is { Type: AdvertisementRecordType.ServiceData128Bit }
-                   && record.Data == NordicUart.ServiceGuid.ToByteArray();
         }
 
         #endregion

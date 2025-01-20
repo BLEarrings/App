@@ -5,10 +5,6 @@
              x:Class="BLEarringController.Views.HomePageView"
              x:DataType="viewModels:HomePageViewModel">
 
-    <ContentPage.BindingContext>
-        <viewModels:HomePageViewModel />
-    </ContentPage.BindingContext>
-
     <ScrollView>
         <VerticalStackLayout Padding="30,0"
                              Spacing="25">
