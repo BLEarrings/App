@@ -256,7 +256,9 @@ namespace BLEarringController.ViewModels
             //}
             if (!await _bleManager.Connect(selectedDevice))
             {
-                // TODO: Display alert indicating device selection failure.
+                await _notificationManager.DisplayAlert(
+                    "Failed to connect to device",
+                    "Could not connect to the selected device. Please try again.");
                 return;
             }
 
@@ -277,11 +279,14 @@ namespace BLEarringController.ViewModels
         /// </summary>
         private async Task ScanCommandTask()
         {
+            // Wait for the entire duration of a standard scan to enter the semaphore. If this
+            // fails, simply return as the scan cannot begin.
             if (!await _scanSemaphore.WaitAsync(ScanTimeout))
             {
-                // TODO: Warn user with popup?
-                // Wait for the entire duration of a standard scan to enter the semaphore. If
-                // this fails, simply return as the scan cannot begin.
+                await _notificationManager.DisplayAlert(
+                    "Failed to start BLE scan.",
+                    "Timed out waiting for the previous BLE scan to finish.");
+
                 return;
             }
 
@@ -290,7 +295,6 @@ namespace BLEarringController.ViewModels
             {
                 if (!await _bleManager.RequestPermission("Bluetooth permission is required to perform a BLE scan."))
                 {
-                    // TODO: Causes an exception as semaphore cannot be released!
                     return;
                 }
 
