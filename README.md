@@ -10,6 +10,6 @@ reference:
 
 - [.NET Community Toolkit](https://github.com/CommunityToolkit/dotnet).
   - [CommunityToolkit.Mvvm](https://learn.microsoft.com/en-gb/dotnet/communitytoolkit/mvvm/).
-- [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui).
+  - [.NET MAUI Community Toolkit](https://github.com/CommunityToolkit/Maui).
 - [Plugin.BLE](https://github.com/dotnet-bluetooth-le/dotnet-bluetooth-le).
 - [Scrutor](https://github.com/khellang/Scrutor).
